@@ -6,6 +6,35 @@
 ## Tim Wornell
 
 import boto3
+from botocore.exceptions import ClientError
+
+def print_secret(item, i):
+    value = stacks['Stacks'][item]['Outputs'][i]['OutputValue']
+    start_string = value.find(':secret:')+8
+    end_string = len(value)-7
+    secret_name = value[start_string:end_string]
+    print(f' Secret Name:       {secret_name}')
+    region_name = "eu-west-2"
+
+    # Create a Secrets Manager client
+    session = boto3.session.Session()
+    client = session.client(
+        service_name='secretsmanager',
+        region_name=region_name
+        )
+
+    try:
+        get_secret_value_response = client.get_secret_value(
+            SecretId=secret_name
+        )
+    except ClientError as e:
+        # For a list of exceptions thrown, see
+        # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+        raise e
+
+    # Decrypts secret using the associated KMS key.
+    secret = get_secret_value_response['SecretString']
+    print(f' Secret Value:      {secret}')
 
 def pull_stacks():
     client = boto3.client('cloudformation')
@@ -23,14 +52,14 @@ def print_output():
     #print(stacks)
     ## create labels and set to display as green text
     label = ['  status:  ', '    created:  ', 'Stack Name: ', 'Description: ', 'Updated: ', ' at: ',
-            'Outputs']
+            'Outputs:']
     for i in range(len(label)):
         label[i] = f'\x1b[0;32;40m{label[i]}\x1b[0m'
 
     print()
     print('\x1b[0;30;42m') #black on green!
     print(' *************************************************')
-    print('               DEPLOYED STACKS                 ')
+    print('        DEPLOYED CLOUDFORMATION STACKS           ')
     print(f'              Region: {region}                ')      
     print(f'            AccountID: {account}            ')
     print(f'            Account: {alias}            ')
@@ -74,6 +103,8 @@ def print_output():
                 for i in range(len(stacks['Stacks'][item]['Outputs'])):
                     print(' '+stacks['Stacks'][item]['Outputs'][i]['OutputKey']
                     +':     '+stacks['Stacks'][item]['Outputs'][i]['OutputValue'])
+                    if stacks['Stacks'][item]['Outputs'][i]['OutputValue'].find('secret') > 0:
+                        print_secret(item, i)
             except:
                 print(' None')
                 pass

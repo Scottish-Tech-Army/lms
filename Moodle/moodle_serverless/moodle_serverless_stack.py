@@ -104,7 +104,7 @@ class MoodleServerlessStack(Stack):
             cpu=1024,                    # Default is 256
             ## Desired count set to 1, can try to 2 to test.
             ## Can be increased to 2 for subsequent deployments.
-            desired_count=1,            # Default is 1 suggested is 2
+            desired_count=2,            # Default is 1 suggested is 2
             min_healthy_percent=50,     # Default is 50% of desired count
             memory_limit_mib=2048,      # Default is 512
             public_load_balancer=True,  # Default is False

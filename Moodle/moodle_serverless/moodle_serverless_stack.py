@@ -8,6 +8,7 @@ from aws_cdk import (
     aws_rds as rds,
     aws_efs as efs,
     aws_iam as iam,
+    aws_wafv2 as waf,
     #aws_lambda as lambda_,
     #aws_apigateway as apigateway,
     #aws_s3 as s3,
@@ -113,7 +114,7 @@ class MoodleServerlessStack(Stack):
             health_check_grace_period=Duration.seconds(900), # Default is 60
             platform_version=ecs.FargatePlatformVersion.VERSION1_4, # must specify VERSION1_4 for efs to mount
             )
-
+        
         ##  A volume for the containers in EFS
         volume_name = "moodleVolume"        ## referenced in mount point below
         application.task_definition.add_volume(name=volume_name,
@@ -151,6 +152,146 @@ class MoodleServerlessStack(Stack):
         application.service.connections.allow_from(data_base, port_range=dbport)
         application.service.connections.allow_from(file_system, port_range=efsport)
         file_system.connections.allow_default_port_from(application.service)
+
+        ####################
+        ##### WAF stuff ####
+        ####################
+
+        waf_rules = list()
+        
+        """ 0. PHP Rule Set"""
+        """ Contains rules that block request patterns associated with exploiting vulnerabilities specific to the use of PHP, 
+        including injection of unsafe PHP functions. This can help prevent exploits that allow an attacker to remotely execute code or commands """
+        aws_php_rule = waf.CfnWebACL.RuleProperty(
+            name='WafPHPRule',
+            priority=0,
+            override_action=waf.CfnWebACL.OverrideActionProperty(count={}),
+            statement=waf.CfnWebACL.StatementOneProperty(
+                managed_rule_group_statement=waf.CfnWebACL.ManagedRuleGroupStatementProperty(
+                    name='AWSManagedRulesPHPRuleSet',
+                    vendor_name='AWS',
+                    excluded_rules=[]
+                )
+            ),
+            visibility_config=waf.CfnWebACL.VisibilityConfigProperty(
+                cloud_watch_metrics_enabled=True,
+                metric_name='aws_php',
+                sampled_requests_enabled=True,
+            )
+        )
+        waf_rules.append(aws_php_rule)
+
+        """ 1. AWS Common Rule Set """
+        """ Contains rules that are generally applicable to web applications. 
+        This provides protection against exploitation of a wide range of vulnerabilities, 
+        including those described in OWASP publications. """
+        aws_common_rule = waf.CfnWebACL.RuleProperty(
+            name='WafCommonRule',
+            priority=1,
+            override_action=waf.CfnWebACL.OverrideActionProperty(count={}),
+            statement=waf.CfnWebACL.StatementOneProperty(
+                managed_rule_group_statement=waf.CfnWebACL.ManagedRuleGroupStatementProperty(
+                    name='AWSManagedRulesCommonRuleSet',
+                    vendor_name='AWS',
+                    excluded_rules=[]
+                )
+            ),
+            visibility_config=waf.CfnWebACL.VisibilityConfigProperty(
+                cloud_watch_metrics_enabled=True,
+                metric_name='aws_common',
+                sampled_requests_enabled=True,
+            )
+        )
+        waf_rules.append(aws_common_rule)
+
+        """ 2. SQL Injection """
+        """ Contains rules that allow you to block request patterns associated with exploitation of SQL databases, 
+        like SQL injection attacks. This can help prevent remote injection of unauthorized queries """
+        aws_sqli_rule = waf.CfnWebACL.RuleProperty(
+            name='WafSQLiRule',
+            priority=2,
+            override_action=waf.CfnWebACL.OverrideActionProperty(count={}),
+            statement=waf.CfnWebACL.StatementOneProperty(
+                managed_rule_group_statement=waf.CfnWebACL.ManagedRuleGroupStatementProperty(
+                    name='AWSManagedRulesSQLiRuleSet',
+                    vendor_name='AWS',
+                    excluded_rules=[]
+                )
+            ),
+            visibility_config=waf.CfnWebACL.VisibilityConfigProperty(
+                cloud_watch_metrics_enabled=True,
+                metric_name='aws_sqli',
+                sampled_requests_enabled=True,
+            )
+        )
+        waf_rules.append(aws_sqli_rule)
+
+        """ 3. Linux Rule """
+        """ Contains rules that block request patterns associated with exploitation of vulnerabilities specific to Linux, including LFI attacks. 
+        This can help prevent attacks that expose file contents or execute code for which the attacker should not have had access """
+        aws_linux_rule = waf.CfnWebACL.RuleProperty(
+            name='WafLinuxRule',
+            priority=3,
+            override_action=waf.CfnWebACL.OverrideActionProperty(count={}),
+            statement=waf.CfnWebACL.StatementOneProperty(
+                managed_rule_group_statement=waf.CfnWebACL.ManagedRuleGroupStatementProperty(
+                    name='AWSManagedRulesLinuxRuleSet',
+                    vendor_name='AWS',
+                    excluded_rules=[]
+                )
+            ),
+            visibility_config=waf.CfnWebACL.VisibilityConfigProperty(
+                cloud_watch_metrics_enabled=True,
+                metric_name='aws_linux',
+                sampled_requests_enabled=True,
+            )
+        )
+        waf_rules.append(aws_linux_rule)
+
+        """ 4. Bad Input Rule """
+        """ Contains rules that block request patterns associated with exploitation of vulnerabilities specific to Linux, including LFI attacks. 
+        This can help prevent attacks that expose file contents or execute code for which the attacker should not have had access """
+        aws_bad_input_rule = waf.CfnWebACL.RuleProperty(
+            name='WafBadInputRule',
+            priority=4,
+            override_action=waf.CfnWebACL.OverrideActionProperty(count={}),
+            statement=waf.CfnWebACL.StatementOneProperty(
+                managed_rule_group_statement=waf.CfnWebACL.ManagedRuleGroupStatementProperty(
+                    name='AWSManagedRulesKnownBadInputsRuleSet',
+                    vendor_name='AWS',
+                    excluded_rules=[]
+                )
+            ),
+            visibility_config=waf.CfnWebACL.VisibilityConfigProperty(
+                cloud_watch_metrics_enabled=True,
+                metric_name='aws_badinput',
+                sampled_requests_enabled=True,
+            )
+        )
+        waf_rules.append(aws_bad_input_rule)
+
+        """ Create the Web ACL for the WAF using the managed rule sets list (waf_rules) 
+        in this case the Web ACL is "REGIONAL" as we are attaching it to the ALB """
+        web_acl = waf.CfnWebACL(
+            self, 'WebACL',
+            default_action=waf.CfnWebACL.DefaultActionProperty(
+                allow={}
+            ),
+            scope="REGIONAL",  
+            visibility_config=waf.CfnWebACL.VisibilityConfigProperty(
+                cloud_watch_metrics_enabled=True,
+                metric_name='webACL',
+                sampled_requests_enabled=True
+            ),
+            name=f'MoodleWAF-dev',
+            rules=waf_rules
+        )
+
+        """ Associate it with the ALB arn. """
+        waf.CfnWebACLAssociation(self, 'WAFACLAssociateALB',
+                                 web_acl_arn=web_acl.attr_arn,
+                                 resource_arn=application.load_balancer.load_balancer_arn)
+        
 
         ## Outputs, prints output values
         CfnOutput(self, 'MOODLE-USERNAME', value='moodleadmin') 

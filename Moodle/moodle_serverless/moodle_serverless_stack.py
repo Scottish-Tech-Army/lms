@@ -101,12 +101,12 @@ class MoodleServerlessStack(Stack):
         application = ecs_patterns.ApplicationLoadBalancedFargateService(self, 
             "moodleFargateService",
             cluster=cluster,            # Required
-            cpu=1024,                    # Default is 256
+            cpu=2048,                    # Default is 256
             ## Desired count set to 1, can try to 2 to test.
             ## Can be increased to 2 for subsequent deployments.
             desired_count=2,            # Default is 1 suggested is 2
             min_healthy_percent=50,     # Default is 50% of desired count
-            memory_limit_mib=2048,      # Default is 512
+            memory_limit_mib=4096,      # Default is 512
             public_load_balancer=True,  # Default is False
             assign_public_ip=True,
             task_image_options=task_image_options,

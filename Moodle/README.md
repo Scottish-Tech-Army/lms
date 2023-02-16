@@ -61,3 +61,8 @@ NB you will need to have AWS credentials to run `cdk deploy`
  * `cdk diff`        compare deployed stack with current state
  * `cdk docs`        open CDK documentation
 
+## I drew a picture with [https://app.diagrams.net/?splash=0&libs=aws4](https://app.diagrams.net/?splash=0&libs=aws4)
+
+![architecture](Arch.drawio.png)
+
+

@@ -14,6 +14,7 @@ from aws_cdk import (
     #aws_lambda_event_sources as event_sources,
     aws_secretsmanager as secretsmanager,
     CfnOutput as CfnOutput,
+    aws_elasticloadbalancingv2 as elbv2
 )
 from constructs import Construct
 
@@ -101,6 +102,10 @@ class MoodleServerlessStack(Stack):
         application = ecs_patterns.ApplicationLoadBalancedFargateService(self, 
             "moodleFargateService",
             cluster=cluster,            # Required
+            #domain_name='',
+            #domain_zone=,
+            #protocol=elbv2.ApplicationProtocol.HTTPS,
+            #redirect_http=True,
             cpu=2048,                    # Default is 256
             ## Desired count set to 1, can try to 2 to test.
             ## Can be increased to 2 for subsequent deployments.

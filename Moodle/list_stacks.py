@@ -38,14 +38,16 @@ def print_secret(item, i):
 
 def pull_stacks():
     client = boto3.client('cloudformation')
-    alias = boto3.client('iam').list_account_aliases()['AccountAliases'][0]
+    
     try:
+        alias = boto3.client('iam').list_account_aliases()['AccountAliases'][0]
         stacks = client.describe_stacks()
         region = stacks['Stacks'][0]['StackId'][23:32]
         account = stacks['Stacks'][0]['StackId'][33:45]
         return stacks, region, account, alias
     except Exception as error:
         print(f'{error}\n')
+        print('Have you logged in? Have your credentials expired?')
         exit()
 
 def print_output():

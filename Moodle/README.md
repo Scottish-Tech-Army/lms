@@ -25,7 +25,7 @@ You will need the following to use the CDK in Python:
  * Make sure you have completed the initial setup steps
  * Clone the repo `git clone https://github.com/Scottish-Tech-Army/LMS.git`
  * Move into the cloned directory ` cd LMS`
- * Best to make a local development branch `git switch nameofyouruniquebranch`
+ * Best to make a local development branch `git switch -c nameofyouruniquebranch`
  * Move into the infrastructure directory, where the cdk code is kept `cd Moodle`
  * Create a virtual environment as .venv `python -m venv .venv`
  * Activate the virtual environment with `source .venv/bin/activate`

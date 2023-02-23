@@ -14,7 +14,7 @@ from aws_cdk import (
     #aws_lambda_event_sources as event_sources,
     aws_secretsmanager as secretsmanager,
     CfnOutput as CfnOutput,
-    aws_elasticloadbalancingv2 as elbv2
+    #aws_elasticloadbalancingv2 as elbv2
 )
 from constructs import Construct
 
@@ -29,14 +29,33 @@ class MoodleServerlessStack(Stack):
             #nat_gateways=1
             )
 
+        '''
         ## RDS DATABASE - mysql
+        ## https://aws.amazon.com/rds/instance-types/
+        ## https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_rds/DatabaseInstance.html
         data_base = rds.DatabaseInstance(self, "moodle-db",
             vpc=vpc,
             engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0_30),
+            instance_type=ec2.InstanceType('t4g.micro'), #https://aws.amazon.com/rds/mysql/pricing/?pg=pr&loc=2
+            max_allocated_storage=5, #GiB
             database_name="moodledb",
             credentials=rds.Credentials.from_generated_secret("dbadmin", 
                 exclude_characters='(" %+~`#$&*()|[]}{:;<>?!\'/^-,@_=\\'), # generate secret password for dbuser
-                removal_policy=RemovalPolicy.DESTROY      # dev
+            removal_policy=RemovalPolicy.DESTROY      # dev
+            )
+        '''
+        ## Test with Aurora Database, may need tweaking. Is it cheaper??!
+        ## https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_rds/DatabaseCluster.html
+        data_base = rds.DatabaseCluster(self, 'moodle-db',
+            vpc=vpc,
+            engine=rds.DatabaseClusterEngine.aurora_mysql(version=rds.AuroraMysqlEngineVersion.VER_5_7_12),
+            instance_props=rds.InstanceProps(
+                instance_type=ec2.InstanceType.of(ec2.InstanceClass.T4G, ec2.InstanceSize.MICRO)
+                ),
+            database_name="moodledb",
+            credentials=rds.Credentials.from_generated_secret("dbadmin", 
+                exclude_characters='(" %+~`#$&*()|[]}{:;<>?!\'/^-,@_=\\'), # generate secret password for dbuser
+            removal_policy=RemovalPolicy.DESTROY      # dev
             )
 
         # EFS elastic file system
@@ -78,6 +97,7 @@ class MoodleServerlessStack(Stack):
             image=ecs.ContainerImage.from_registry("bitnami/moodle"),
             container_name="MoodleContainer",
             container_port=8080,
+# https://github.com/bitnami/containers/blob/main/bitnami/moodle/README.md#user-and-site-configuration
             environment={
                 'MOODLE_DATABASE_TYPE': 'mysqli',
                 'MOODLE_DATABASE_HOST': endpointaddress,
@@ -87,10 +107,11 @@ class MoodleServerlessStack(Stack):
                 'MOODLE_USERNAME': 'moodleadmin',
                 #'MOODLE_PASSWORD': 'nmoodle',
                 #'MOODLE_EMAIL': 'hello@example.com',
-                #'MOODLE_SITE_NAME': 'Scalable Moodle on ECS Fargate',
+                'MOODLE_SITE_NAME': 'Scottish Tech Army',
                 'MOODLE_SKIP_BOOTSTRAP': 'no',
                 'MOODLE_SKIP_INSTALL': 'no',
-                'BITNAMI_DEBUG': 'true'},            
+                'BITNAMI_DEBUG': 'true',
+                'PHP_UPLOAD_MAX_FILESIZE': '500'},  # https://github.com/Scottish-Tech-Army/lms/issues/3
             secrets={"MOODLE_DATABASE_PASSWORD": dbpassword,
                     "MOODLE_PASSWORD": ecs.Secret.from_secrets_manager(moodlepassword)}
             )

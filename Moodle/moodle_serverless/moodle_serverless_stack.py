@@ -30,29 +30,15 @@ class MoodleServerlessStack(Stack):
             #nat_gateways=1
             )
 
-        '''
         ## RDS DATABASE - mysql
         ## https://aws.amazon.com/rds/instance-types/
         ## https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_rds/DatabaseInstance.html
         data_base = rds.DatabaseInstance(self, "moodle-db",
             vpc=vpc,
-            engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0_30),
+            engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0_31),
             instance_type=ec2.InstanceType('t4g.micro'), #https://aws.amazon.com/rds/mysql/pricing/?pg=pr&loc=2
-            max_allocated_storage=5, #GiB
-            database_name="moodledb",
-            credentials=rds.Credentials.from_generated_secret("dbadmin", 
-                exclude_characters='(" %+~`#$&*()|[]}{:;<>?!\'/^-,@_=\\'), # generate secret password for dbuser
-            removal_policy=RemovalPolicy.DESTROY      # dev
-            )
-        '''
-        ## Test with Aurora Database, may need tweaking. Is it cheaper??!
-        ## https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_rds/DatabaseCluster.html
-        data_base = rds.DatabaseCluster(self, 'moodle-db',
-            vpc=vpc,
-            engine=rds.DatabaseClusterEngine.aurora_mysql(version=rds.AuroraMysqlEngineVersion.VER_5_7_12),
-            instance_props=rds.InstanceProps(
-                instance_type=ec2.InstanceType.of(ec2.InstanceClass.T4G, ec2.InstanceSize.MICRO)
-                ),
+            allocated_storage=5, 
+            max_allocated_storage=20, #GiB
             database_name="moodledb",
             credentials=rds.Credentials.from_generated_secret("dbadmin", 
                 exclude_characters='(" %+~`#$&*()|[]}{:;<>?!\'/^-,@_=\\'), # generate secret password for dbuser
@@ -192,7 +178,7 @@ class MoodleServerlessStack(Stack):
             name='WafPHPRule',
             priority=0,
             override_action=waf.CfnWebACL.OverrideActionProperty(count={}),
-            statement=waf.CfnWebACL.StatementOneProperty(
+            statement=waf.CfnWebACL.StatementProperty(
                 managed_rule_group_statement=waf.CfnWebACL.ManagedRuleGroupStatementProperty(
                     name='AWSManagedRulesPHPRuleSet',
                     vendor_name='AWS',
@@ -215,7 +201,7 @@ class MoodleServerlessStack(Stack):
             name='WafCommonRule',
             priority=1,
             override_action=waf.CfnWebACL.OverrideActionProperty(count={}),
-            statement=waf.CfnWebACL.StatementOneProperty(
+            statement=waf.CfnWebACL.StatementProperty(
                 managed_rule_group_statement=waf.CfnWebACL.ManagedRuleGroupStatementProperty(
                     name='AWSManagedRulesCommonRuleSet',
                     vendor_name='AWS',
@@ -237,7 +223,7 @@ class MoodleServerlessStack(Stack):
             name='WafSQLiRule',
             priority=2,
             override_action=waf.CfnWebACL.OverrideActionProperty(count={}),
-            statement=waf.CfnWebACL.StatementOneProperty(
+            statement=waf.CfnWebACL.StatementProperty(
                 managed_rule_group_statement=waf.CfnWebACL.ManagedRuleGroupStatementProperty(
                     name='AWSManagedRulesSQLiRuleSet',
                     vendor_name='AWS',
@@ -259,7 +245,7 @@ class MoodleServerlessStack(Stack):
             name='WafLinuxRule',
             priority=3,
             override_action=waf.CfnWebACL.OverrideActionProperty(count={}),
-            statement=waf.CfnWebACL.StatementOneProperty(
+            statement=waf.CfnWebACL.StatementProperty(
                 managed_rule_group_statement=waf.CfnWebACL.ManagedRuleGroupStatementProperty(
                     name='AWSManagedRulesLinuxRuleSet',
                     vendor_name='AWS',
@@ -281,7 +267,7 @@ class MoodleServerlessStack(Stack):
             name='WafBadInputRule',
             priority=4,
             override_action=waf.CfnWebACL.OverrideActionProperty(count={}),
-            statement=waf.CfnWebACL.StatementOneProperty(
+            statement=waf.CfnWebACL.StatementProperty(
                 managed_rule_group_statement=waf.CfnWebACL.ManagedRuleGroupStatementProperty(
                     name='AWSManagedRulesKnownBadInputsRuleSet',
                     vendor_name='AWS',

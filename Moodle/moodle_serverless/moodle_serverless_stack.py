@@ -98,7 +98,7 @@ class MoodleServerlessStack(Stack):
                 'MOODLE_SKIP_BOOTSTRAP': 'no',
                 'MOODLE_SKIP_INSTALL': 'no',
                 'BITNAMI_DEBUG': 'true',
-                'PHP_UPLOAD_MAX_FILESIZE': '500'},  # https://github.com/Scottish-Tech-Army/lms/issues/3
+                'PHP_UPLOAD_MAX_FILESIZE': '500M'},  # https://github.com/Scottish-Tech-Army/lms/issues/3
             secrets={"MOODLE_DATABASE_PASSWORD": dbpassword,
                     "MOODLE_PASSWORD": ecs.Secret.from_secrets_manager(moodlepassword)}
             )

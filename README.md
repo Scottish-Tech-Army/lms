@@ -1,5 +1,5 @@
 
-# Welcome to the STA Platform Team's Learning Managment System CDK Python project!
+# Welcome to the STA Platform Team's Learning Management System CDK Python project!
 
 We have deployed Moodle LMS using the AWS CDK. 
 

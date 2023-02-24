@@ -5,7 +5,7 @@ This infrastructure is built with the AWS Cloud Development Kit (CDK) and writte
 
 It has been built using this AWS blog post as a guide: [modernize-moodle-lms-aws-serverless-containers](https://aws.amazon.com/blogs/publicsector/modernize-moodle-lms-aws-serverless-containers/)
 
-## Initial setup for AWS CDK deelopment
+## Initial setup for AWS CDK development
 
  * Full setup details can be found at [AWS CDK Getting Started](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html)
  * A getting started tutorial from AWS can be found [here](https://aws.amazon.com/getting-started/guides/setup-cdk/)
@@ -21,7 +21,7 @@ You will need the following to use the CDK in Python:
  * To be able to run tests with pytest run `python3 -m pip install --upgrade -r requirements-dev.txt`
  * The entry point for the app will be: `./app.py`
 
-## To work with the lastest code in this repo
+## To work with the latest code in this repo
  * Make sure you have completed the initial setup steps
  * Clone the repo `git clone https://github.com/Scottish-Tech-Army/LMS.git`
  * Move into the cloned directory ` cd LMS`
@@ -49,7 +49,7 @@ To get started with development:
 
 ## Tidy Up when you have finished
  * Destroy the deployed app with `cdk destroy nameofstack` in development to avoid extra costs
- * Deactivate the vitual environment `deactivate`
+ * Deactivate the virtual environment `deactivate`
 
 NB you will need to have AWS credentials to run `cdk deploy`
 

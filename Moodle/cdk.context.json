@@ -3,5 +3,9 @@
     "eu-west-2a",
     "eu-west-2b",
     "eu-west-2c"
-  ]
+  ],
+  "hosted-zone:account=131458236732:domainName=commcouncil.scot:region=eu-west-2": {
+    "Id": "/hostedzone/Z0913498178AQZWXNLTGW",
+    "Name": "commcouncil.scot."
+  }
 }

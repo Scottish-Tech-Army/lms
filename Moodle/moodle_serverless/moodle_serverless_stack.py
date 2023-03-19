@@ -9,6 +9,8 @@ from aws_cdk import (
     aws_efs as efs,
     aws_iam as iam,
     aws_wafv2 as waf,
+    aws_certificatemanager as cert_man,
+    aws_route53 as rt53,
     #aws_lambda as lambda_,
     #aws_apigateway as apigateway,
     #aws_s3 as s3,
@@ -19,7 +21,7 @@ from aws_cdk import (
 )
 from constructs import Construct
 
-class MoodleServerlessStack(Stack):
+class MoodleServerlessStackV2(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -27,7 +29,7 @@ class MoodleServerlessStack(Stack):
         ## VPC
         vpc = ec2.Vpc(self, "Vpc", 
             max_azs=2,   # default is all AZs in region = 3
-            #nat_gateways=1
+            # nat_gateways=1
             )
 
         ## RDS DATABASE - mysql
@@ -105,21 +107,24 @@ class MoodleServerlessStack(Stack):
         
         ## ECS container cluster for Moodle containers
         cluster = ecs.Cluster(self, "Moodle-Cluster", vpc=vpc)
+        # ARN for certifcate from Certificate Manager
+        certificate_arn = "arn:aws:acm:eu-west-2:131458236732:certificate/34bf02e0-4845-4e79-8036-9fb6dd0a8c4c"
 
         ## Fargate Service for container cluster with auto load balancer
         application = ecs_patterns.ApplicationLoadBalancedFargateService(self, 
             "moodleFargateService",
             cluster=cluster,            # Required
             #domain_name='',
-            #domain_zone=,
-            #protocol=elbv2.ApplicationProtocol.HTTPS,
-            #redirect_http=True,
-            cpu=2048,                    # Default is 256
+            domain_zone=rt53.HostedZone.from_lookup(self, "TwilightZone", domain_name="commcouncil.scot"),
+            #protocol=elbv2.ApplicationProtocol.HTTPS, # if a certificate is supplied it defaults to HTTPS allegedly
+            redirect_http=True,
+            certificate=cert_man.Certificate.from_certificate_arn(self, "Moodle-domain-cert", certificate_arn),
+            cpu=256,                    # Default is 256
             ## Desired count set to 1, can try to 2 to test.
             ## Can be increased to 2 for subsequent deployments.
-            desired_count=2,            # Default is 1 suggested is 2
+            desired_count=1,            # Default is 1 suggested is 2
             min_healthy_percent=50,     # Default is 50% of desired count
-            memory_limit_mib=4096,      # Default is 512
+            memory_limit_mib=1024,      # Default is 512
             public_load_balancer=True,  # Default is False
             assign_public_ip=True,
             task_image_options=task_image_options,

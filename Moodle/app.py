@@ -3,11 +3,11 @@ import os
 
 import aws_cdk as cdk
 
-from moodle_serverless.moodle_serverless_stack import MoodleServerlessStack
+from moodle_serverless.moodle_serverless_stack import MoodleServerlessStackV2
 
 
 app = cdk.App()
-MoodleServerlessStack(app, "MoodleServerlessStack",
+MoodleServerlessStackV2(app, "MoodleServerlessStackV2",
     # If you don't specify 'env', this stack will be environment-agnostic.
     # Account/Region-dependent features and context lookups will not work,
     # but a single synthesized template can be deployed anywhere.

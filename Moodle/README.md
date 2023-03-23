@@ -1,4 +1,6 @@
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=593780093)
+
 # Development Infrastructure for Moodle LMS
 
 This infrastructure is built with the AWS Cloud Development Kit (CDK) and written in Python.

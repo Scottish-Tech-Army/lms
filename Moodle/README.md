@@ -1,6 +1,16 @@
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=593780093)
 
+### To use Codespaces for Development
+ * Click the Codespaces button above.
+ * Wait for it to load.
+ * Once open click in the terminal window.
+ * Create a virtual environment `python3 -m venv .venv`
+ * Move into the virtual environment `source .venv/bin/activate`
+ * Install requirements `pip install -r requirements.txt`
+ * Continue with development!
+ * Monitor your open codespaces with the Codespaces tab in your github account.
+
 # Development Infrastructure for Moodle LMS
 
 This infrastructure is built with the AWS Cloud Development Kit (CDK) and written in Python.
@@ -26,7 +36,7 @@ You will need the following to use the CDK in Python:
 ## To work with the latest code in this repo
  * Make sure you have completed the initial setup steps
  * Clone the repo `git clone https://github.com/Scottish-Tech-Army/LMS.git`
- * Move into the cloned directory ` cd LMS`
+ * Move into the cloned directory `cd LMS`
  * Best to make a local development branch `git switch -c nameofyouruniquebranch`
  * Move into the infrastructure directory, where the cdk code is kept `cd Moodle`
  * Create a virtual environment as .venv `python -m venv .venv`

@@ -23,13 +23,13 @@ from constructs import Construct
 
 class MoodleServerlessStackV2(Stack):
 
-    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, props: dict, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         ## VPC
         vpc = ec2.Vpc(self, "Vpc", 
             max_azs=2,   # default is all AZs in region = 3
-            # nat_gateways=1
+            nat_gateways=1 # default is one in each zone. Cheaper for us to create a NAT instance?
             )
 
         ## RDS DATABASE - mysql
@@ -107,18 +107,16 @@ class MoodleServerlessStackV2(Stack):
         
         ## ECS container cluster for Moodle containers
         cluster = ecs.Cluster(self, "Moodle-Cluster", vpc=vpc)
-        # ARN for certifcate from Certificate Manager
-        certificate_arn = "arn:aws:acm:eu-west-2:131458236732:certificate/34bf02e0-4845-4e79-8036-9fb6dd0a8c4c"
 
         ## Fargate Service for container cluster with auto load balancer
         application = ecs_patterns.ApplicationLoadBalancedFargateService(self, 
             "moodleFargateService",
             cluster=cluster,            # Required
             #domain_name='',
-            domain_zone=rt53.HostedZone.from_lookup(self, "TwilightZone", domain_name="commcouncil.scot"),
+            domain_zone=rt53.HostedZone.from_lookup(self, "TwilightZone", domain_name=props["domain_name"]),
             #protocol=elbv2.ApplicationProtocol.HTTPS, # if a certificate is supplied it defaults to HTTPS allegedly
             redirect_http=True,
-            certificate=cert_man.Certificate.from_certificate_arn(self, "Moodle-domain-cert", certificate_arn),
+            certificate=cert_man.Certificate.from_certificate_arn(self, "Moodle-domain-cert", props["domain_certificate_arn"]),
             cpu=256,                    # Default is 256
             ## Desired count set to 1, can try to 2 to test.
             ## Can be increased to 2 for subsequent deployments.

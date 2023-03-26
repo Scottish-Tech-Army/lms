@@ -37,6 +37,10 @@
     "@aws-cdk/aws-iam:importedRoleStackSafeDefaultPolicyName": true,
     "@aws-cdk/aws-s3:serverAccessLogsUseBucketPolicy": true,
     "@aws-cdk/aws-route53-patters:useCertificate": true,
-    "@aws-cdk/customresources:installLatestAwsSdkDefault": false
+    "@aws-cdk/customresources:installLatestAwsSdkDefault": false,
+    "domain_name": "commcouncil.scot",
+    "hosted_zone_id": "Z00217581OBDF54QYM4OF",
+    "hosted_zone_name": "commcouncil.scot",
+    "domain_certificate_arn": "arn:aws:acm:eu-west-2:131458236732:certificate/34bf02e0-4845-4e79-8036-9fb6dd0a8c4c"
   }
 }

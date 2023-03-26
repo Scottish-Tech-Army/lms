@@ -7,6 +7,14 @@ from moodle_serverless.moodle_serverless_stack import MoodleServerlessStackV2
 
 
 app = cdk.App()
+
+props = {
+    "domain_name": app.node.try_get_context("domain_name"),
+    "hosted_zone_id": app.node.try_get_context("hosted_zone_id"),
+    "hosted_zone_name": app.node.try_get_context("hosted_zone_name"),
+    "domain_certificate_arn": app.node.try_get_context("domain_certificate_arn")
+    }
+
 MoodleServerlessStackV2(app, "MoodleServerlessStackV2",
     # If you don't specify 'env', this stack will be environment-agnostic.
     # Account/Region-dependent features and context lookups will not work,
@@ -21,6 +29,7 @@ MoodleServerlessStackV2(app, "MoodleServerlessStackV2",
     # want to deploy the stack to. */
 
     env=cdk.Environment(account='131458236732', region='eu-west-2'),
+    props=props
 
     # For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html
     )

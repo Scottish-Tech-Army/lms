@@ -124,7 +124,7 @@ class MoodleServerlessStackV2(Stack):
             min_healthy_percent=50,     # Default is 50% of desired count
             memory_limit_mib=1024,      # Default is 512
             public_load_balancer=True,  # Default is False
-            assign_public_ip=True,
+            assign_public_ip=False,     # deploy Fargate service to Private subnets else Public
             task_image_options=task_image_options,
             health_check_grace_period=Duration.seconds(900), # Default is 60
             platform_version=ecs.FargatePlatformVersion.VERSION1_4, # must specify VERSION1_4 for efs to mount

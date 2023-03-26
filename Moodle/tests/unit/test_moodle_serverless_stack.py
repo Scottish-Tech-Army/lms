@@ -139,4 +139,26 @@ def test_Fargate_task_memory_is_correct_size():
     template = assertions.Template.from_stack(test_stack)
     template.has_resource_properties("AWS::ECS::TaskDefinition", {"Memory": "1024"})
 
+def test_Fargate_desired_task_count():
+    app = cdk.App()
+    test_stack = MoodleServerlessStackV2(app, "MoodleServerlessStackV2", env=cdk.Environment(account='131458236732', region='eu-west-2'), props=props)
+    template = assertions.Template.from_stack(test_stack)
+    template.has_resource_properties("AWS::ECS::Service", {"DesiredCount": 1})
+
+def test_Fargate_in_private_subnet():
+    app = cdk.App()
+    test_stack = MoodleServerlessStackV2(app, "MoodleServerlessStackV2", env=cdk.Environment(account='131458236732', region='eu-west-2'), props=props)
+    template = assertions.Template.from_stack(test_stack)
+    template.has_resource_properties("AWS::ECS::Service", 
+                                     {"NetworkConfiguration": {
+                                                            "AwsvpcConfiguration": {
+                                                                "AssignPublicIp": "DISABLED"
+                                                            }
+                                                            }
+                                                        }
+                                    )
+
+
+
+
 

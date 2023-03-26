@@ -29,6 +29,7 @@ MoodleServerlessStackV2(app, "MoodleServerlessStackV2",
     # want to deploy the stack to. */
 
     env=cdk.Environment(account='131458236732', region='eu-west-2'),
+    props=props
 
     # For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html
     )

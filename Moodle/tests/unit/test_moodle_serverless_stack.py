@@ -11,6 +11,9 @@ props = {
     "domain_certificate_arn": "arn:aws:acm:eu-west-2:131458236732:certificate/34bf02e0-4845-4e79-8036-9fb6dd0a8c4c"
     }
 
+# CDK documentation can be found here:
+# https://docs.aws.amazon.com/cdk/api/v1/python/aws_cdk.assertions.html
+
 def test_vpc_exists():
     app = cdk.App()
     test_stack = MoodleServerlessStackV2(app, "MoodleServerlessStackV2", env=cdk.Environment(account='131458236732', region='eu-west-2'), props=props)
@@ -111,9 +114,29 @@ def test_vpc_has_two_private_subnets():
      }
     ]})
 
-    
+def test_only_one_nat_gateway():
+    app = cdk.App()
+    test_stack = MoodleServerlessStackV2(app, "MoodleServerlessStackV2", env=cdk.Environment(account='131458236732', region='eu-west-2'), props=props)
+    template = assertions.Template.from_stack(test_stack)
+    # Assert that we have created only one NAT Gateway
+    template.resource_count_is("AWS::EC2::NatGateway", 1)
 
+def test_DBinstance_is_correct_size():
+    app = cdk.App()
+    test_stack = MoodleServerlessStackV2(app, "MoodleServerlessStackV2", env=cdk.Environment(account='131458236732', region='eu-west-2'), props=props)
+    template = assertions.Template.from_stack(test_stack)
+    template.has_resource_properties("AWS::RDS::DBInstance", {"DBInstanceClass": "db.t4g.micro"})
 
+def test_Fargate_task_CPU_is_correct_size():
+    app = cdk.App()
+    test_stack = MoodleServerlessStackV2(app, "MoodleServerlessStackV2", env=cdk.Environment(account='131458236732', region='eu-west-2'), props=props)
+    template = assertions.Template.from_stack(test_stack)
+    template.has_resource_properties("AWS::ECS::TaskDefinition", {"Cpu": "256"})
 
+def test_Fargate_task_memory_is_correct_size():
+    app = cdk.App()
+    test_stack = MoodleServerlessStackV2(app, "MoodleServerlessStackV2", env=cdk.Environment(account='131458236732', region='eu-west-2'), props=props)
+    template = assertions.Template.from_stack(test_stack)
+    template.has_resource_properties("AWS::ECS::TaskDefinition", {"Memory": "1024"})
 
 

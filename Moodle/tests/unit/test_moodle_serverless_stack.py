@@ -121,13 +121,19 @@ def test_only_one_nat_gateway():
     # Assert that we have created only one NAT Gateway
     template.resource_count_is("AWS::EC2::NatGateway", 1)
 
-def test_DBinstance_is_correct_size():
+def test_DBinstance_is_correct_type():
     app = cdk.App()
     test_stack = MoodleServerlessStackV2(app, "MoodleServerlessStackV2", env=cdk.Environment(account='131458236732', region='eu-west-2'), props=props)
     template = assertions.Template.from_stack(test_stack)
     template.has_resource_properties("AWS::RDS::DBInstance", {"DBInstanceClass": "db.t4g.micro"})
 
-def test_Fargate_task_CPU_is_correct_size():
+def test_DBinstance_storage_is_correct_size():
+    app = cdk.App()
+    test_stack = MoodleServerlessStackV2(app, "MoodleServerlessStackV2", env=cdk.Environment(account='131458236732', region='eu-west-2'), props=props)
+    template = assertions.Template.from_stack(test_stack)
+    template.has_resource_properties("AWS::RDS::DBInstance", {"AllocatedStorage": "5"})
+
+def test_Fargate_task_vCPU_is_correct_size():
     app = cdk.App()
     test_stack = MoodleServerlessStackV2(app, "MoodleServerlessStackV2", env=cdk.Environment(account='131458236732', region='eu-west-2'), props=props)
     template = assertions.Template.from_stack(test_stack)
@@ -149,14 +155,26 @@ def test_Fargate_in_private_subnet():
     app = cdk.App()
     test_stack = MoodleServerlessStackV2(app, "MoodleServerlessStackV2", env=cdk.Environment(account='131458236732', region='eu-west-2'), props=props)
     template = assertions.Template.from_stack(test_stack)
-    template.has_resource_properties("AWS::ECS::Service", 
-                                     {"NetworkConfiguration": {
-                                                            "AwsvpcConfiguration": {
-                                                                "AssignPublicIp": "DISABLED"
-                                                            }
-                                                            }
-                                                        }
-                                    )
+    template.has_resource_properties("AWS::ECS::Service", {"NetworkConfiguration": 
+        {
+            "AwsvpcConfiguration": {"AssignPublicIp": "DISABLED"}
+        }
+    })
+
+def test_load_balancer_deployed():
+    app = cdk.App()
+    test_stack = MoodleServerlessStackV2(app, "MoodleServerlessStackV2", env=cdk.Environment(account='131458236732', region='eu-west-2'), props=props)
+    template = assertions.Template.from_stack(test_stack)
+    template.resource_count_is("AWS::ElasticLoadBalancingV2::LoadBalancer", 1)
+
+def test_load_balancer_is_correct_type():
+    app = cdk.App()
+    test_stack = MoodleServerlessStackV2(app, "MoodleServerlessStackV2", env=cdk.Environment(account='131458236732', region='eu-west-2'), props=props)
+    template = assertions.Template.from_stack(test_stack)
+    template.has_resource_properties("AWS::ElasticLoadBalancingV2::LoadBalancer", {"Type": "application"})
+
+
+
 
 
 

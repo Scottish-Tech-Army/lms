@@ -173,6 +173,19 @@ def test_load_balancer_is_correct_type():
     template = assertions.Template.from_stack(test_stack)
     template.has_resource_properties("AWS::ElasticLoadBalancingV2::LoadBalancer", {"Type": "application"})
 
+def test_load_balancer_has_certificate():
+    app = cdk.App()
+    test_stack = MoodleServerlessStackV2(app, "MoodleServerlessStackV2", env=cdk.Environment(account='131458236732', region='eu-west-2'), props=props)
+    template = assertions.Template.from_stack(test_stack)
+    template.has_resource_properties("AWS::ElasticLoadBalancingV2::Listener", {"Certificates": [
+     {
+      "CertificateArn": props["domain_certificate_arn"]
+     }
+    ],
+    "Port": 443})
+
+
+
 
 
 

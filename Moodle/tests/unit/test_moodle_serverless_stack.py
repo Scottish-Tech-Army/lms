@@ -182,7 +182,25 @@ def test_load_balancer_has_certificate():
       "CertificateArn": props["domain_certificate_arn"]
      }
     ],
-    "Port": 443})
+    "Port": 443,
+    "Protocol": "HTTPS"})
+
+def test_load_balancer_is_redirecting_HTTP_to_HTTPS():
+    app = cdk.App()
+    test_stack = MoodleServerlessStackV2(app, "MoodleServerlessStackV2", env=cdk.Environment(account='131458236732', region='eu-west-2'), props=props)
+    template = assertions.Template.from_stack(test_stack)
+    template.has_resource_properties("AWS::ElasticLoadBalancingV2::Listener",{"DefaultActions": [
+     {
+      "RedirectConfig": {
+       "Port": "443",
+       "Protocol": "HTTPS",
+       "StatusCode": "HTTP_301"
+      },
+      "Type": "redirect"
+     }
+    ]})
+    
+
 
 
 

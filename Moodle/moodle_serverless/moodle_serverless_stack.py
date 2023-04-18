@@ -108,28 +108,24 @@ class MoodleServerlessStackV2(Stack):
         ## ECS container cluster for Moodle containers
         cluster = ecs.Cluster(self, "Moodle-Cluster", vpc=vpc)
 
-        ## Zone
+        # Zone
         zone = rt53.HostedZone.from_lookup(self, "TwilightZone", domain_name=props["domain_name"])
 
-        ## Cerificate
-        moodle_domain_cert = cert_man.DnsValidatedCertificate(self, "Moodle-domain-cert",
-          domain_name=props["domain_name"],
-          hosted_zone=zone, # props["hosted_zone_id"],
-          region="us-east-1", # Potentially this might need to change?
+        # Cerificate        
+        test_cert = cert_man.Certificate(self, "Certificate",
+            domain_name=props["domain_name"],
+            certificate_name="Moodle LMS dev",  
+            validation=cert_man.CertificateValidation.from_dns(zone)
         )
 
         ## Fargate Service for container cluster with auto load balancer
         application = ecs_patterns.ApplicationLoadBalancedFargateService(self,
             "moodleFargateService",
             cluster=cluster,            # Required
-            #domain_name='',
-            domain_zone=zone, # rt53.HostedZone.from_lookup(self, "TwilightZone", domain_name=props["domain_name"]),
-            #protocol=elbv2.ApplicationProtocol.HTTPS, # if a certificate is supplied it defaults to HTTPS allegedly
+            domain_zone=zone, 
             redirect_http=True,
-            certificate=moodle_domain_cert, # This can probably go: cert_man.Certificate.from_certificate_arn(self, "Moodle-domain-cert", props["domain_certificate_arn"]),
+            certificate=test_cert,
             cpu=256,                    # Default is 256
-            ## Desired count set to 1, can try to 2 to test.
-            ## Can be increased to 2 for subsequent deployments.
             desired_count=1,            # Default is 1 suggested is 2
             min_healthy_percent=50,     # Default is 50% of desired count
             memory_limit_mib=1024,      # Default is 512

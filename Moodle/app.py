@@ -11,8 +11,7 @@ app = cdk.App()
 props = {
     "domain_name": app.node.try_get_context("domain_name"),
     "hosted_zone_id": app.node.try_get_context("hosted_zone_id"),
-    "hosted_zone_name": app.node.try_get_context("hosted_zone_name"),
-    "domain_certificate_arn": app.node.try_get_context("domain_certificate_arn")
+    "hosted_zone_name": app.node.try_get_context("hosted_zone_name")
     }
 
 MoodleServerlessStackV2(app, "MoodleServerlessStackV2",

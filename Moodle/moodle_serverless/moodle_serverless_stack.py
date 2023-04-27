@@ -109,6 +109,7 @@ class MoodleServerlessStackV2(Stack):
         cluster = ecs.Cluster(self, "Moodle-Cluster", vpc=vpc)
 
         ## Fargate Service for container cluster with auto load balancer
+        # https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_ecs_patterns/ApplicationLoadBalancedFargateService.html
         application = ecs_patterns.ApplicationLoadBalancedFargateService(self, 
             "moodleFargateService",
             cluster=cluster,            # Required

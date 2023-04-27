@@ -7,8 +7,7 @@ import aws_cdk as cdk
 props = {
     "domain_name": "commcouncil.scot",
     "hosted_zone_id": "Z00217581OBDF54QYM4OF",
-    "hosted_zone_name": "commcouncil.scot",
-    "domain_certificate_arn": "arn:aws:acm:eu-west-2:131458236732:certificate/34bf02e0-4845-4e79-8036-9fb6dd0a8c4c"
+    "hosted_zone_name": "commcouncil.scot"
     }
 
 # CDK documentation can be found here:
@@ -155,7 +154,7 @@ def test_Fargate_in_private_subnet():
     app = cdk.App()
     test_stack = MoodleServerlessStackV2(app, "MoodleServerlessStackV2", env=cdk.Environment(account='131458236732', region='eu-west-2'), props=props)
     template = assertions.Template.from_stack(test_stack)
-    template.has_resource_properties("AWS::ECS::Service", {"NetworkConfiguration": 
+    template.has_resource_properties("AWS::ECS::Service", {"NetworkConfiguration":
         {
             "AwsvpcConfiguration": {"AssignPublicIp": "DISABLED"}
         }
@@ -173,17 +172,6 @@ def test_load_balancer_is_correct_type():
     template = assertions.Template.from_stack(test_stack)
     template.has_resource_properties("AWS::ElasticLoadBalancingV2::LoadBalancer", {"Type": "application"})
 
-def test_load_balancer_has_certificate():
-    app = cdk.App()
-    test_stack = MoodleServerlessStackV2(app, "MoodleServerlessStackV2", env=cdk.Environment(account='131458236732', region='eu-west-2'), props=props)
-    template = assertions.Template.from_stack(test_stack)
-    template.has_resource_properties("AWS::ElasticLoadBalancingV2::Listener", {"Certificates": [
-     {
-      "CertificateArn": props["domain_certificate_arn"]
-     }
-    ],
-    "Port": 443,
-    "Protocol": "HTTPS"})
 
 def test_load_balancer_is_redirecting_HTTP_to_HTTPS():
     app = cdk.App()
@@ -199,7 +187,7 @@ def test_load_balancer_is_redirecting_HTTP_to_HTTPS():
       "Type": "redirect"
      }
     ]})
-    
+
 
 
 

@@ -7,5 +7,6 @@
   "hosted-zone:account=131458236732:domainName=commcouncil.scot:region=eu-west-2": {
     "Id": "/hostedzone/Z0913498178AQZWXNLTGW",
     "Name": "commcouncil.scot."
-  }
+  },
+  "ami:account=131458236732:filters.image-type.0=machine:filters.name.0=amzn-ami-vpc-nat-*:filters.state.0=available:owners.0=amazon:region=eu-west-2": "ami-08e236547ad160a59"
 }

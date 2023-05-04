@@ -22,16 +22,23 @@ from aws_cdk import (
 from constructs import Construct
 
 class MoodleServerlessStackV2(Stack):
-
     def __init__(self, scope: Construct, construct_id: str, props: dict, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        ## VPC
-        vpc = ec2.Vpc(self, "Vpc",
-            max_azs=2,   # default is all AZs in region = 3
-            nat_gateways=1 # default is one in each zone. Cheaper for us to create a NAT instance?
+        ## Nat Instance
+        # Create a new NAT instance
+        nat_gateway_provider = ec2.NatProvider.instance(
+            instance_type=ec2.InstanceType('t3.nano')
             )
 
+        ## VPC
+        ## https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_ec2/Vpc.html
+        vpc = ec2.Vpc(self, "Vpc",
+            max_azs=2,   # default is all AZs in region = 3
+            nat_gateways=1, # default is one in each zone. Cheaper for us to create a NAT instance?
+            nat_gateway_provider=nat_gateway_provider
+            )
+              
         ## RDS DATABASE - mysql
         ## https://aws.amazon.com/rds/instance-types/
         ## https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_rds/DatabaseInstance.html
@@ -175,6 +182,8 @@ class MoodleServerlessStackV2(Stack):
         application.service.connections.allow_from(file_system, port_range=efsport)
         file_system.connections.allow_default_port_from(application.service)
 
+
+      
         ####################
         ##### WAF stuff ####
         ####################
@@ -313,7 +322,7 @@ class MoodleServerlessStackV2(Stack):
         waf.CfnWebACLAssociation(self, 'WAFACLAssociateALB',
                                  web_acl_arn=web_acl.attr_arn,
                                  resource_arn=application.load_balancer.load_balancer_arn)
-
+        
 
         ## Outputs, prints output values
         CfnOutput(self, 'MOODLE-USERNAME', value='moodleadmin')
